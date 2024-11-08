@@ -1,5 +1,5 @@
 Hubstaff Timer
-
+![hubst1](https://github.com/user-attachments/assets/9aafb29f-31c5-4d74-8cf8-5c535a9e2313)
 Repository Structure:
 
 hubstaff-timer/
@@ -9,7 +9,6 @@ hubstaff-timer/
 ├── requirements.txt       # List of dependencies
 ├── README.md              # Project documentation
 └── .gitignore             # Files and directories to ignore by Git
-![hubst1](https://github.com/user-attachments/assets/9aafb29f-31c5-4d74-8cf8-5c535a9e2313)
 
 
 Detailed Content for Each File
@@ -44,7 +43,7 @@ Follow these steps to set up the project locally:
 1. Clone the repository:
    ```bash
    git clone https://github.com/<your-username>/hubstaff-timer.git
-{https://github.com/BanshikaSharma/HubstaffTimeTracker}
+https://github.com/BanshikaSharma/HubstaffTimeTracker/tree/main
 
 2 Run the application:
 python app.py
