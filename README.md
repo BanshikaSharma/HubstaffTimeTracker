@@ -2,13 +2,14 @@ Hubstaff Timer
 ![hubst1](https://github.com/user-attachments/assets/9aafb29f-31c5-4d74-8cf8-5c535a9e2313)
 Repository Structure:
 
+
 hubstaff-timer/
-├── app.py                # Main Flask application code
-├── templates/            # Directory for HTML templates
-│   └── index.html        # Main HTML file for the application
-├── requirements.txt       # List of dependencies
-├── README.md              # Project documentation
-└── .gitignore             # Files and directories to ignore by Git
+├── app.py
+├── templates/
+│   └── index.html
+├── requirements.txt
+├── README.md
+└── .gitignore
 
 
 Detailed Content for Each File
