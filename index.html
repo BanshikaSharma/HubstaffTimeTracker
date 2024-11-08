@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubstaff</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-pink-50 text-gray-800 font-sans">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-1/4 bg-pink-100 border-r border-pink-300 shadow-lg p-4">
+            <div class="flex items-center mb-4">
+                <img alt="Hubstaff logo" class="mr-2" height="24" src="https://storage.googleapis.com/a1aa/image/fZIu06WBou2QASGxl6usnzLbCl5NJQO14RhOEE9B5iGL6T3JA.jpg" width="24"/>
+                <span class="text-lg font-semibold">Hubstaff</span>
+            </div>
+            <div class="text-center mb-4">
+                <div id="timer" class="text-2xl font-bold bg-white text-gray-800 shadow-md py-2 rounded">
+                    00:00:00
+                </div>
+                <div class="text-lg font-semibold mt-2" id="currentTask">No task selected</div>
+                <button id="timerButton" class="mt-4 bg-pink-300 text-gray-800 rounded-full p-4 shadow hover:bg-pink-400 transition duration-200">
+                    Start
+                </button>
+                <div class="mt-4 text-sm text-gray-600">No limits</div>
+                <div class="text-sm text-gray-600">Today: 0:00</div>
+            </div>
+            <div class="relative mb-4">
+                <input class="w-full border border-pink-300 rounded p-2 bg-white text-gray-800 shadow" placeholder="Search" type="text" id="search" oninput="filterTodos()"/>
+                <i class="fas fa-search absolute right-3 top-3 text-pink-500"></i>
+            </div>
+            <div class="text-lg font-semibold mb-2">Banshika's Organization</div>
+            <form method="POST" action="/add_todo">
+                <input class="w-full border border-pink-300 rounded p-2 mb-2 bg-white text-gray-800 shadow" name="todo_content" placeholder="Add a new to-do" type="text" required/>
+                <button class="bg-pink-300 text-gray-800 rounded-full p-2 w-full shadow hover:bg-pink-400 transition duration-200 flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i> Add Todo
+                </button>
+            </form>
+            <div class="mb-4">
+                <label for="filter" class="text-lg font-semibold">Filter:</label>
+                <select id="filter" class="border border-pink-300 rounded p-2 w-full bg-white text-gray-800 shadow">
+                    <option value="all">All to-dos</option>
+                    <option value="completed">Completed</option>
+                    <option value="incomplete">Incomplete</option>
+                </select>
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="w-3/4 p-4 bg-white shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <div class="text-lg font-semibold">To-dos</div>
+                <div class="flex items-center">
+                    <input class="border border-pink-300 rounded p-2 mr-2 bg-white text-gray-800 shadow" placeholder="Search to-dos" type="text" id="todoSearch" oninput="filterTodos()"/>
+                    <button class="bg-pink-300 text-gray-800 rounded p-2 shadow hover:bg-pink-400 transition duration-200 flex items ```html
+                    <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center mb-4">
+                <input class="mr-2" type="checkbox" id="showCompleted" onchange="toggleCompletedTasks()"/>
+                <label for="showCompleted">Show completed</label>
+            </div>
+            <div class="border border-pink-300 rounded p-2 mb-4" id="todoList">
+                {% for todo in todos %}
+                <div class="flex justify-between items-center bg-pink-200 p-2 rounded shadow todo-item" onclick="selectTask('{{ todo.content }}')">
+                    <span>{{ todo.date.strftime('%m/%d/%Y %I:%M %p') }} - {{ todo.content }} <span id="timeSpent-{{ todo.id }}">00:00:00</span></span>
+                    <form method="POST" action="/delete_todo" class="ml-2">
+                        <input type="hidden" name="todo_id" value="{{ todo.id }}">
+                        <button type="submit" class="text-red-500 hover:text-red-700 transition duration-200">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <script>
+        let timerRunning = false;
+        let startTime;
+        let timerInterval;
+        let elapsedTime = 0; // Store elapsed time for resuming
+        let currentTask = '';
+        let taskTimes = {}; // Object to store time for each task
+
+        function startTimer() {
+            if (!timerRunning) {
+                startTime = Date.now(); // Reset start time
+                timerInterval = setInterval(updateTimer, 1000);
+                timerRunning = true;
+                document.getElementById('timerButton').textContent = 'Stop';
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            elapsedTime += (Date.now() - startTime); // Add to elapsed time
+            document.getElementById('timerButton').textContent = 'Start';
+            updateTaskTimeDisplay(currentTask);
+        }
+
+        function updateTimer() {
+            const totalSeconds = Math.floor((Date.now() - startTime + elapsedTime) / 1000);
+            const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+            const seconds = String(totalSeconds % 60).padStart(2, '0');
+            document.getElementById('timer').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        function selectTask(taskContent) {
+            if (currentTask !== taskContent) {
+                if (timerRunning) {
+                    stopTimer();
+                }
+                currentTask = taskContent;
+                document.getElementById('currentTask').textContent = currentTask;
+                elapsedTime = 0; // Reset elapsed time for new task
+                if (!taskTimes[currentTask]) {
+                    taskTimes[currentTask] = 0; // Initialize time for new task
+                }
+                startTimer(); // Start timer when a task is selected
+            }
+        }
+
+        function updateTaskTimeDisplay(taskContent) {
+            const totalSeconds = Math.floor((taskTimes[taskContent] + elapsedTime) / 1000);
+            const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+            const seconds = String(totalSeconds % 60).padStart(2, '0');
+            document.getElementById(`timeSpent-${taskContent}`).textContent = `${hours}:${minutes}:${seconds}`;
+            taskTimes[taskContent] += elapsedTime; // Update task time
+        }
+
+        function toggleCompletedTasks() {
+            const showCompleted = document.getElementById('showCompleted').checked;
+            const todoItems = document.querySelectorAll('.todo-item');
+            todoItems.forEach(item => {
+                if (showCompleted) {
+                    item.style.display = ''; // Show all tasks
+                } else {
+                    // Logic to hide completed tasks
+                    const isCompleted = item.classList.contains('completed'); // Assuming completed tasks have a 'completed' class
+                    item.style.display = isCompleted ? 'none' : ''; // Hide completed tasks
+                }
+            });
+        }
+
+        function filterTodos() {
+            const searchInput = document.getElementById('todoSearch').value.toLowerCase();
+            const todoItems = document
+            .querySelectorAll('.todo-item');
+            todoItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchInput) ? '' : 'none';
+            });
+        }
+
+        document.getElementById('timerButton').addEventListener('click', function() {
+            if (timerRunning) {
+                stopTimer();
+            } else {
+                startTimer();
+            }
+        });
+    </script>
+</body>
+</html>
